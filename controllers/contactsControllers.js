@@ -5,13 +5,11 @@ export const getAllContacts = async (req, res) => {
     try {
         const allContacts = await getContacts()
 
-        res.json({
-            status: 'success',
-            code: 200,
-            data: allContacts,
-        });
+        res.status(200).json(allContacts);
     }
-    catch { }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 }
 
 export const getOneContact = async (req, res) => {
@@ -22,11 +20,7 @@ export const getOneContact = async (req, res) => {
         if (!contactById) {
             return res.status(404).send("Not Found");
         }
-        res.json({
-            status: 'success',
-            code: 200,
-            data: { contactById },
-        });
+        res.status(200).json(contactById);
 
     }
     catch {
@@ -42,23 +36,17 @@ export const deleteContact = async (req, res) => {
     try {
         const { id } = req.params;
         const removeContactById = await removeContact(id);
-
-        if (!removeContactById) {
-            return res.status(404).send("Not Found");
+        if (removeContactById) {
+            res.status(200).json(removeContactById);
+        } else {
+            res.status(404).json({ message: "Not found" });
         }
-
-        res.json({
-            status: 'success',
-            code: 200,
-
-        });
 
     }
     catch {
-        (error) => {
+        () => {
 
-            console.error("message:", error)
-            res.status(200).send("Product deleted");
+            res.status(404).json({ message: "Not found" });
         }
     }
 };
@@ -67,35 +55,32 @@ export const createContact = async (req, res) => {
     try {
 
         const addNewContact = await addContact(req.body);
-
-        res.status(201).json({
-            status: 'success',
-            code: 201,
-            data: { addNewContact },
-        })
-
-
+        res.status(200).json(addNewContact);
     }
-    catch {
-        (error) => {
-            res.status(400).json({ message: error.message });
-        }
+    catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
 
 
 export const updateContact = async (req, res) => {
+
     try {
         const { id } = req.params;
         const { name, email, phone } = req.body;
 
-        if (name === undefined && email === undefined && phone === undefined) {
-            res.status(400).json({ message: "Body must have at least one field" });
-        } await updateContacts(id, req.body);
+        if (!name && !email && !phone) {
+            return res.status(400).json({ message: "Body must have at least one field" });
+        }
 
-        const newContact = await getContactById(id)
-        res.status(200).json(newContact);
+        const updatedContact = await updateContacts(id, { name, email, phone });
+
+        if (!updatedContact) {
+            return res.status(404).json({ message: "Not Found" });
+        }
+        res.status(200).json(updatedContact);
     } catch (error) {
+
         res.status(400).json({ message: error.message });
     }
 

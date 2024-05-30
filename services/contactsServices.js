@@ -45,30 +45,32 @@ export async function removeContact(contactId) {
 
 export async function addContact(newContact) {
     const contacts = await listContacts();
+
     let newContactItems = {
-        ...newContact,
         id: nanoid(),
+        ...newContact,
 
     };
+
     contacts.push(newContactItems);
     await writeContacts(contacts);
 
     return newContactItems;
 }
 
-
 export async function updateContacts(id, data) {
     const contacts = await listContacts();
     const index = contacts.findIndex(item => item.id === id);
+
     if (index === -1) {
         return null;
     }
     contacts[index] = {
-        id,
+        ...contacts[index],
         name: data.name || contacts[index].name,
         email: data.email || contacts[index].email,
         phone: data.phone || contacts[index].phone,
     };
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    await writeContacts(contacts);
     return contacts[index];
 }
