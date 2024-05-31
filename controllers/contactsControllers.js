@@ -18,15 +18,15 @@ export const getOneContact = async (req, res) => {
         const contactById = await getContactById(id);
 
         if (!contactById) {
-            return res.status(404).send("Not Found");
+            return res.status(404).send({ "message": "Not found" });
         }
         res.status(200).json(contactById);
 
     }
     catch {
         (error) => {
-            console.error("message:", error)
-            res.status(404).send("Not Found");
+
+            res.status(404).json({ "message": "Not found" });
         }
     }
 }
