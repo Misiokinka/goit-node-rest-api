@@ -1,88 +1,110 @@
-import getContacts, { addContact, getContactById, removeContact, updateContacts } from "../services/contactsServices.js";
-
+import {
+    getContacts,
+    addContact,
+    getContactById,
+    removeContact,
+    updateContacts,
+    updateStatusContact
+} from "../services/contactsServices.js";
+import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res) => {
     try {
-        const allContacts = await getContacts()
-
-        res.status(200).json(allContacts);
-    }
-    catch (error) {
+        const allContacts = await getContacts();
+        res.json({ status: 'success', code: 200, data: allContacts });
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 export const getOneContact = async (req, res) => {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+        return res.status(404).json({ message: "This identifier is not valid" });
+    }
     try {
-        const { id } = req.params;
-        const contactById = await getContactById(id);
 
-        if (!contactById) {
-            return res.status(404).send({ "message": "Not found" });
+        const contact = await getContactById(id);
+        if (!contact) {
+            return res.status(404).json({ message: "Not Found" });
         }
-        res.status(200).json(contactById);
-
+        res.json({ status: 'success', code: 200, data: contact });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch {
-        (error) => {
-
-            res.status(404).json({ "message": "Not found" });
-        }
-    }
-}
+};
 
 export const deleteContact = async (req, res) => {
-
-    try {
-        const { id } = req.params;
-        const removeContactById = await removeContact(id);
-        if (removeContactById) {
-            res.status(200).json(removeContactById);
-        } else {
-            res.status(404).json({ message: "Not found" });
-        }
-
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+        return res.status(404).json({ message: "This identifier is not valid" });
     }
-    catch {
-        () => {
+    try {
 
-            res.status(404).json({ message: "Not found" });
+        const removedContact = await removeContact(id);
+        if (!removedContact) {
+            return res.status(404).json({ message: "Not Found" });
         }
+        res.json({ status: 'success', code: 200, data: removedContact });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
 export const createContact = async (req, res) => {
     try {
-
-        const addNewContact = await addContact(req.body);
-        res.status(200).json(addNewContact);
-    }
-    catch (error) {
-        res.status(400).json({ message: error.message });
+        const { name, email, phone, favorite } = req.body;
+        const newContact = await addContact(name, email, phone, favorite);
+        res.status(201).json({ status: 'success', code: 201, data: newContact });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
-
 export const updateContact = async (req, res) => {
-
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+        return res.status(404).json({ message: "This identifier is not valid" });
+    }
     try {
-        const { id } = req.params;
-        const { name, email, phone } = req.body;
 
-        if (!name && !email && !phone) {
+        const { name, email, phone, favorite } = req.body;
+
+        if (!name && !email && !phone && favorite === undefined) {
             return res.status(400).json({ message: "Body must have at least one field" });
         }
 
-        const updatedContact = await updateContacts(id, { name, email, phone });
-
+        const updatedContact = await updateContacts(id, req.body);
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
-        res.status(200).json(updatedContact);
+
+        res.status(200).json({ status: 'success', code: 200, data: updatedContact });
     } catch (error) {
-
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
+};
+
+export const updateFavoriteStatus = async (req, res) => {
+    const { id } = req.params;
+    const { favorite } = req.body;
+    if (!isValidObjectId(id)) {
+        return res.status(404).json({ message: "This identifier is not valid" });
+    }
+    try {
 
 
-}
+        if (favorite === undefined) {
+            return res.status(400).json({ message: "Missing field favorite" });
+        }
+
+        const updatedContact = await updateStatusContact(id, favorite);
+        if (!updatedContact) {
+            return res.status(404).json({ message: "Not Found" });
+        }
+
+        res.status(200).json({ status: 'success', code: 200, data: updatedContact });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
