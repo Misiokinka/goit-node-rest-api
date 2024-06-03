@@ -1,5 +1,5 @@
 import {
-    getContacts,
+    listContacts,
     addContact,
     getContactById,
     removeContact,
@@ -10,42 +10,42 @@ import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res) => {
     try {
-        const allContacts = await getContacts();
-        res.json({ status: 'success', code: 200, data: allContacts });
+        const allContacts = await listContacts();
+        res.json(allContacts);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 export const getOneContact = async (req, res) => {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
+    const { contactId } = req.params;
+    if (!isValidObjectId(contactId)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
 
-        const contact = await getContactById(id);
+        const contact = await getContactById(contactId);
         if (!contact) {
             return res.status(404).json({ message: "Not Found" });
         }
-        res.json({ status: 'success', code: 200, data: contact });
+        res.json(contact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 export const deleteContact = async (req, res) => {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
+    const { contactId } = req.params;
+    if (!isValidObjectId(contactId)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
 
-        const removedContact = await removeContact(id);
+        const removedContact = await removeContact(contactId);
         if (!removedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
-        res.json({ status: 'success', code: 200, data: removedContact });
+        res.json(removedContact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -55,15 +55,15 @@ export const createContact = async (req, res) => {
     try {
         const { name, email, phone, favorite } = req.body;
         const newContact = await addContact(name, email, phone, favorite);
-        res.status(201).json({ status: 'success', code: 201, data: newContact });
+        res.status(201).json(newContact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 export const updateContact = async (req, res) => {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
+    const { contactId } = req.params;
+    if (!isValidObjectId(contactId)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
@@ -74,21 +74,21 @@ export const updateContact = async (req, res) => {
             return res.status(400).json({ message: "Body must have at least one field" });
         }
 
-        const updatedContact = await updateContacts(id, req.body);
+        const updatedContact = await updateContacts(contactId, req.body);
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
 
-        res.status(200).json({ status: 'success', code: 200, data: updatedContact });
+        res.status(200).json(updatedContact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 export const updateFavoriteStatus = async (req, res) => {
-    const { id } = req.params;
+    const { contactId } = req.params;
     const { favorite } = req.body;
-    if (!isValidObjectId(id)) {
+    if (!isValidObjectId(contactId)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
@@ -98,12 +98,12 @@ export const updateFavoriteStatus = async (req, res) => {
             return res.status(400).json({ message: "Missing field favorite" });
         }
 
-        const updatedContact = await updateStatusContact(id, favorite);
+        const updatedContact = await updateStatusContact(contactId, favorite);
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
 
-        res.status(200).json({ status: 'success', code: 200, data: updatedContact });
+        res.status(200).json(updatedContact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

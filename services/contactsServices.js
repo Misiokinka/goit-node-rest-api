@@ -1,8 +1,13 @@
 import Contact from "../models/contacts.js";
 
-export async function getContacts() {
+export async function listContacts() {
     try {
-        return await Contact.find();
+
+        const data = await Contact.find();
+
+        return data
+
+
     } catch (error) {
         throw new Error(error.message);
     }
@@ -11,7 +16,10 @@ export async function getContacts() {
 export async function getContactById(contactId) {
     try {
         const contact = await Contact.findById(contactId);
-        return contact ? contact : null;
+        if (contact === null) {
+            return null;
+        }
+        return contact;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -20,7 +28,10 @@ export async function getContactById(contactId) {
 export async function removeContact(contactId) {
     try {
         const contact = await Contact.findByIdAndDelete(contactId);
-        return contact ? contact : null;
+        if (contact === null) {
+            return null;
+        }
+        return contact;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -34,16 +45,20 @@ export async function addContact(name, email, phone, favorite = false) {
         favorite,
     };
     try {
-        return await Contact.create(newContact);
+        const contact = await Contact.create(newContact);
+        return contact;
     } catch (error) {
         throw new Error(error.message);
     }
 }
 
-export async function updateContacts(id, data) {
+export async function updateContacts(contactId, data) {
     try {
-        const updatedContact = await Contact.findByIdAndUpdate(id, data, { new: true });
-        return updatedContact ? updatedContact : null;
+        const updatedContact = await Contact.findByIdAndUpdate(contactId, data, { new: true });
+        if (updatedContact === null) {
+            return null;
+        }
+
     } catch (error) {
         throw new Error(error.message);
     }
@@ -51,12 +66,13 @@ export async function updateContacts(id, data) {
 
 export async function updateStatusContact(contactId, favorite) {
     try {
-        const updatedContact = await Contact.findByIdAndUpdate(
-            contactId,
-            { favorite },
-            { new: true }
-        );
-        return updatedContact ? updatedContact : null;
+        const results = updateContacts(contactId, { favorite });
+        if (results == null) {
+            return null
+        }
+        return results;
+
+
     } catch (error) {
         throw new Error(error.message);
     }
