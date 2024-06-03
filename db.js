@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
-const DB_URL = process.env.DB_URL;
+const DB_URI = process.env.DB_URI;
 
 mongoose
-  .connect(DB_URL)
+  .connect(DB_URI)
   .then(() => console.log("Database connection successfully"))
   .catch((error) => {
     console.error("Database connection error:", error);
