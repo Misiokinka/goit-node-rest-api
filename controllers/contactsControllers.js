@@ -18,13 +18,13 @@ export const getAllContacts = async (req, res) => {
 };
 
 export const getOneContact = async (req, res) => {
-    const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
 
-        const contact = await getContactById(contactId);
+        const contact = await getContactById(id);
         if (!contact) {
             return res.status(404).json({ message: "Not Found" });
         }
@@ -35,13 +35,13 @@ export const getOneContact = async (req, res) => {
 };
 
 export const deleteContact = async (req, res) => {
-    const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
 
-        const removedContact = await removeContact(contactId);
+        const removedContact = await removeContact(id);
         if (!removedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
@@ -62,8 +62,8 @@ export const createContact = async (req, res) => {
 };
 
 export const updateContact = async (req, res) => {
-    const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
@@ -74,7 +74,7 @@ export const updateContact = async (req, res) => {
             return res.status(400).json({ message: "Body must have at least one field" });
         }
 
-        const updatedContact = await updateContacts(contactId, req.body);
+        const updatedContact = await updateContacts(id, req.body);
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
@@ -86,9 +86,9 @@ export const updateContact = async (req, res) => {
 };
 
 export const updateFavoriteStatus = async (req, res) => {
-    const { contactId } = req.params;
+    const { id } = req.params;
     const { favorite } = req.body;
-    if (!isValidObjectId(contactId)) {
+    if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
     try {
@@ -98,7 +98,7 @@ export const updateFavoriteStatus = async (req, res) => {
             return res.status(400).json({ message: "Missing field favorite" });
         }
 
-        const updatedContact = await updateStatusContact(contactId, favorite);
+        const updatedContact = await updateStatusContact(id, favorite);
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
