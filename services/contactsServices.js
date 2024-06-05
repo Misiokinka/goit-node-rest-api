@@ -58,15 +58,16 @@ export async function updateContacts(contactId, data) {
         if (updatedContact === null) {
             return null;
         }
-
+        return updatedContact;
     } catch (error) {
         throw new Error(error.message);
     }
 }
 
 export async function updateStatusContact(contactId, favorite) {
+
     try {
-        const results = updateContacts(contactId, { favorite });
+        const results = updateContacts(contactId, favorite);
         if (results == null) {
             return null
         }

@@ -75,11 +75,10 @@ export const updateContact = async (req, res) => {
         }
 
         const updatedContact = await updateContacts(id, req.body);
+
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
-        }
-
-        res.status(200).json(updatedContact);
+        } res.status(200).json(updatedContact);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -98,7 +97,7 @@ export const updateFavoriteStatus = async (req, res) => {
             return res.status(400).json({ message: "Missing field favorite" });
         }
 
-        const updatedContact = await updateStatusContact(id, favorite);
+        const updatedContact = await updateStatusContact(id, { favorite });
         if (!updatedContact) {
             return res.status(404).json({ message: "Not Found" });
         }
