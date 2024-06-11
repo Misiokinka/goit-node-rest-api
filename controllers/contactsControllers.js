@@ -1,109 +1,98 @@
-import {
-    listContacts,
-    addContact,
-    getContactById,
-    removeContact,
-    updateContacts,
-    updateStatusContact
-} from "../services/contactsServices.js";
+
 import { isValidObjectId } from "mongoose";
+import Contact from "../models/contacts.js";
+import HttpError from "../helpers/HttpError.js";
+import ctrlWrapper from "../helpers/ctrlWrapper.js";
+
 
 export const getAllContacts = async (req, res) => {
-    try {
-        const allContacts = await listContacts();
-        res.json(allContacts);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    const { _id: owner } = req.user;
+
+    const { page = 1, limit = 20 } = req.query;
+    const numericLimit = parseInt(limit, 10);
+    const skip = (page - 1) * numericLimit;
+
+
+
+    const data = await Contact.find({ owner })
+        .skip(skip)
+        .limit(numericLimit)
+        .populate("owner", "email subscription");
+    res.json(data);
+
 };
+
 
 export const getOneContact = async (req, res) => {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
-    try {
 
-        const contact = await getContactById(id);
-        if (!contact) {
-            return res.status(404).json({ message: "Not Found" });
-        }
-        res.json(contact);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    const data = await Contact.findById(id);
+
+    if (!data) {
+        throw HttpError(404, "Not Found")
     }
+    res.json(data);
+
 };
+
+
 
 export const deleteContact = async (req, res) => {
     const { id } = req.params;
-    if (!isValidObjectId(id)) {
-        return res.status(404).json({ message: "This identifier is not valid" });
-    }
-    try {
 
-        const removedContact = await removeContact(id);
-        if (!removedContact) {
-            return res.status(404).json({ message: "Not Found" });
-        }
-        res.json(removedContact);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    const data = await Contact.findByIdAndDelete(id);
+    if (!data) {
+        throw HttpError(404, "Not Found")
     }
+    res.json(data);
+
 };
 
 export const createContact = async (req, res) => {
-    try {
-        const { name, email, phone, favorite } = req.body;
-        const newContact = await addContact(name, email, phone, favorite);
-        res.status(201).json(newContact);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    const { _id: owner } = req.user;
+
+
+    const data = await Contact.create({ ...req.body, owner })
+
+    res.status(201).json(data);
+
 };
 
 export const updateContact = async (req, res) => {
     const { id } = req.params;
-    if (!isValidObjectId(id)) {
-        return res.status(404).json({ message: "This identifier is not valid" });
-    }
-    try {
 
-        const { name, email, phone, favorite } = req.body;
+    const data = await Contact.findByIdAndUpdate(id, req.body, { new: true });;
 
-        if (!name && !email && !phone && favorite === undefined) {
-            return res.status(400).json({ message: "Body must have at least one field" });
-        }
+    if (!data) {
+        throw HttpError(404, "Not Found")
+    } res.status(200).json(data);
 
-        const updatedContact = await updateContacts(id, req.body);
-
-        if (!updatedContact) {
-            return res.status(404).json({ message: "Not Found" });
-        } res.status(200).json(updatedContact);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
 };
 
 export const updateFavoriteStatus = async (req, res) => {
     const { id } = req.params;
-    const { favorite } = req.body;
-    if (!isValidObjectId(id)) {
-        return res.status(404).json({ message: "This identifier is not valid" });
+    const { favorite } = req.body
+    const data = await Contact.findByIdAndUpdate(id, { favorite }, { new: true });;
+
+    if (!data) {
+        throw HttpError(404, "Not Found")
     }
-    try {
 
+    res.status(200).json(data);
 
-        if (favorite === undefined) {
-            return res.status(400).json({ message: "Missing field favorite" });
-        }
-
-        const updatedContact = await updateStatusContact(id, { favorite });
-        if (!updatedContact) {
-            return res.status(404).json({ message: "Not Found" });
-        }
-
-        res.status(200).json(updatedContact);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
 };
+
+
+
+
+export default {
+    getAllContacts: ctrlWrapper(getAllContacts),
+    getOneContact: ctrlWrapper(getOneContact),
+    deleteContact: ctrlWrapper(deleteContact),
+    createContact: ctrlWrapper(createContact),
+    updateContact: ctrlWrapper(updateContact),
+    updateFavoriteStatus: ctrlWrapper(updateFavoriteStatus)
+}
