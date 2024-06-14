@@ -1,10 +1,17 @@
-import User from "../models/users.js";
-import ctrlWrapper from "../helpers/ctrlWrapper.js";
-import HttpError from "../helpers/HttpError.js";
+import User from "../models/users.js"
+import ctrlWrapper from "../middleware/ctrlWrapper.js";
+import HttpError from "../middleware/HttpError.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+import Jimp from "jimp";
+import { randomUUID } from "crypto";
 
-const { SECRET_KEY } = process.env
+const { SECRET_KEY } = process.env;
+
+
 
 const register = async (req, res) => {
     const { email, password } = req.body;
@@ -14,17 +21,18 @@ const register = async (req, res) => {
         throw HttpError(409, "Email in use")
     }
 
-    const hashPassword = await bcrypt.hash(password, 10)
+    const hashPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
 
 
 
-
-    const newUser = await User.create({ ...req.body, password: hashPassword })
+    const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL })
 
     res.status(201).json({
         users: {
             email: newUser.email,
             subscription: newUser.subscription,
+            avatarUrl: newUser.avatarUrl,
         }
     })
 }
@@ -78,10 +86,39 @@ const updateSub = async (req, res) => {
     });
 }
 
+const updateAvatar = async (req, res, next) => {
+
+    const tempPath = req.file.path;
+    const newFilename = `${req.user.id}-${randomUUID()}${path.extname(req.file.originalname)}`;
+    const newPath = path.resolve("public", "avatars", newFilename);
+
+    const image = await Jimp.read(tempPath);
+    await image.resize(250, 250).writeAsync(newPath);
+
+
+    await fs.unlink(tempPath);
+
+    const avatarURL = `/avatars/${newFilename}`;
+
+    const user = await User.findByIdAndUpdate(
+        req.user.id,
+        { avatarURL },
+        { new: true }
+    );
+
+    if (!user) {
+        return res.status(401).send({ message: "Not authorized" });
+    }
+
+    res.status(200).send({ avatarURL: user.avatarURL });
+
+};
+
 export default {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logOut: ctrlWrapper(logOut),
     updateSub: ctrlWrapper(updateSub),
+    updateAvatar: ctrlWrapper(updateAvatar),
 }
