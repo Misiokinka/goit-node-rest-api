@@ -1,6 +1,6 @@
 import Contact from "../models/contacts.js";
-import HttpError from "../middleware/HttpError.js";
-import ctrlWrapper from "../middleware/ctrlWrapper.js";
+import HttpError from "../helpers/HttpError.js";
+import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res) => {
@@ -36,13 +36,14 @@ export const deleteContact = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
+    if (data.owner.toString() !== req.user.id) {
+        return res.status(404).send({ message: "Contact not found" });
+    }
     const data = await Contact.findByIdAndDelete(id);
     if (!data) {
         throw HttpError(404, "Not Found");
     }
-    if (data.owner.toString() !== req.user.id) {
-        return res.status(404).send({ message: "Contact not found" });
-    }
+
     res.json(data);
 };
 
@@ -57,13 +58,14 @@ export const updateContact = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
+    if (data.owner.toString() !== req.user.id) {
+        return res.status(404).send({ message: "Contact not found" });
+    }
     const data = await Contact.findByIdAndUpdate(id, req.body, { new: true });
     if (!data) {
         throw HttpError(404, "Not Found");
     }
-    if (data.owner.toString() !== req.user.id) {
-        return res.status(404).send({ message: "Contact not found" });
-    }
+
     res.status(200).json(data);
 };
 
@@ -73,13 +75,14 @@ export const updateFavoriteStatus = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
+    if (data.owner.toString() !== req.user.id) {
+        return res.status(404).send({ message: "Contact not found" });
+    }
     const data = await Contact.findByIdAndUpdate(id, { favorite }, { new: true });
     if (!data) {
         throw HttpError(404, "Not Found");
     }
-    if (data.owner.toString() !== req.user.id) {
-        return res.status(404).send({ message: "Contact not found" });
-    }
+
     res.status(200).json(data);
 };
 
