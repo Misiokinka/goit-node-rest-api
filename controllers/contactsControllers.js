@@ -36,7 +36,9 @@ export const deleteContact = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
-    if (data.owner.toString() !== req.user.id) {
+    const contact = await Contact.findById(id);
+
+    if (contact.owner.toString() !== req.user.id) {
         return res.status(404).send({ message: "Contact not found" });
     }
     const data = await Contact.findByIdAndDelete(id);
@@ -58,7 +60,9 @@ export const updateContact = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
-    if (data.owner.toString() !== req.user.id) {
+    const contact = await Contact.findById(id);
+
+    if (contact.owner.toString() !== req.user.id) {
         return res.status(404).send({ message: "Contact not found" });
     }
     const data = await Contact.findByIdAndUpdate(id, req.body, { new: true });
@@ -75,7 +79,9 @@ export const updateFavoriteStatus = async (req, res) => {
     if (!isValidObjectId(id)) {
         return res.status(404).json({ message: "This identifier is not valid" });
     }
-    if (data.owner.toString() !== req.user.id) {
+    const contact = await Contact.findById(id);
+
+    if (contact.owner.toString() !== req.user.id) {
         return res.status(404).send({ message: "Contact not found" });
     }
     const data = await Contact.findByIdAndUpdate(id, { favorite }, { new: true });
