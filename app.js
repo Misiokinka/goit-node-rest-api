@@ -7,6 +7,7 @@ import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/authRouter.js";
 
 import "./db.js"
+import auth from "./controllers/auth.js";
 
 
 
@@ -19,6 +20,7 @@ app.use("/avatars", express.static(path.resolve("public/avatars")));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/users", authRouter);
+app.get("/api/users/verify/:verificationToken", auth.verifyEmail)
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
