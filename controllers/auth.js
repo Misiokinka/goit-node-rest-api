@@ -86,8 +86,10 @@ const updateSub = async (req, res) => {
     });
 }
 
-const updateAvatar = async (req, res, next) => {
-
+const updateAvatar = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).send({ message: "No file uploaded" });
+    }
     const tempPath = req.file.path;
     const newFilename = `${req.user.id}-${randomUUID()}${path.extname(req.file.originalname)}`;
     const newPath = path.resolve("public", "avatars", newFilename);
