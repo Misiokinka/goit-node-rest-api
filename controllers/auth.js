@@ -30,7 +30,7 @@ const register = async (req, res) => {
     const newUser = await User.create({ ...req.body, password: hashPassword, avatarUrl, verificationToken })
     const message = {
         to: email,
-        from: "misiokinka.com",
+        from: "misiokinka@gmail.com",
         subject: "Verify email",
         html: `To confirm your email please click on <a target="_blank" href="${BASE_URI}/api/users/verify/${verificationToken}">link</a>`,
         text: `To confirm your email please open the link ${BASE_URI}/api/users/verify/${verificationToken}`,
