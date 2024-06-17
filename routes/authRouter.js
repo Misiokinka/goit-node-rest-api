@@ -16,7 +16,7 @@ authRouter.post("/logout", authenticate, auth.logOut)
 authRouter.get("/current", authenticate, auth.getCurrent)
 authRouter.patch("/", authenticate, validateBody(subscriptionSchema), auth.updateSub)
 authRouter.patch("/avatars", authenticate, upload.single("avatar"), auth.updateAvatar)
-
+authRouter.get("/verify/:verificationToken", auth.verifyEmail)
 authRouter.post("/verify", validateBody(emailSchema), auth.resendVerification)
 
 
